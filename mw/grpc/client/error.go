@@ -42,9 +42,9 @@ func GrpcClientErrorConvert() grpc.DialOption {
 			msg := fmt.Sprintf("grpc service %s down, grpc message %s", target, sta.Message())
 			return errs.NewCodeError(errs.ServerInternalError, msg).Wrap()
 		}
-		if sta.Code() < 100 {
-			return errs.ErrInternalServer.WrapMsg(err.Error())
-		}
+		//if sta.Code() < 100 {
+		//	return errs.ErrInternalServer.WrapMsg(err.Error())
+		//}
 		if details := sta.Details(); len(details) > 0 {
 			if errInfo, ok := details[0].(*errinfo.ErrorInfo); ok {
 				detail := strings.Join(errInfo.Warp, "->") + errInfo.Cause
