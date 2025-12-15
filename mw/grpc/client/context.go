@@ -2,7 +2,8 @@ package client
 
 import (
 	"context"
-
+	dconstant "dubbo.apache.org/dubbo-go/v3/common/constant"
+	"fmt"
 	"github.com/openimsdk/protocol/constant"
 	"github.com/openimsdk/tools/errs"
 	"google.golang.org/grpc"
@@ -27,7 +28,21 @@ func GrpcClientContext() grpc.DialOption {
 		}
 		operationID, ok := ctx.Value(constant.OperationID).(string)
 		if !ok {
-			return errs.ErrArgs.WrapMsg("ctx missing operationID")
+			if raw := ctx.Value(dconstant.AttachmentKey); raw != nil {
+				if attachments, ok := raw.(map[string]interface{}); ok {
+					if id, exists := attachments["operationid"]; exists && id != nil {
+						if strID, ok := id.(string); ok {
+							operationID = strID
+						} else {
+							operationID = fmt.Sprint(id)
+						}
+					}
+				}
+			}
+
+			if operationID == "" {
+				return errs.ErrArgs.WrapMsg("ctx missing operationID")
+			}
 		}
 		md.Set(constant.OperationID, operationID)
 		opUserID, ok := ctx.Value(constant.OpUserID).(string)
