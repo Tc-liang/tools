@@ -16,7 +16,7 @@ package oss
 
 import (
 	"net/http"
-	"net/url"
+	// "net/url" // unused after AccessURL switched to bucketURL
 	_ "unsafe"
 
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
@@ -28,12 +28,13 @@ func signHeader(c oss.Conn, req *http.Request, canonicalizedResource string, cre
 //go:linkname getURLParams github.com/aliyun/aliyun-oss-go-sdk/oss.Conn.getURLParams
 func getURLParams(c oss.Conn, params map[string]any) string
 
-//go:linkname getURL github.com/aliyun/aliyun-oss-go-sdk/oss.urlMaker.getURL
-func getURL(um urlMaker, bucket, object, params string) *url.URL
+// Unused after AccessURL switched to use bucketURL directly.
+// //go:linkname getURL github.com/aliyun/aliyun-oss-go-sdk/oss.urlMaker.getURL
+// func getURL(um urlMaker, bucket, object, params string) *url.URL
 
-type urlMaker struct {
-	Scheme  string
-	NetLoc  string
-	Type    int
-	IsProxy bool
-}
+// type urlMaker struct {
+// 	Scheme  string
+// 	NetLoc  string
+// 	Type    int
+// 	IsProxy bool
+// }
