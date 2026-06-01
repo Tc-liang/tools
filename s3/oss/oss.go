@@ -25,7 +25,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	// "reflect" // unused after AccessURL switched to bucketURL
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -83,8 +83,8 @@ func NewOSS(conf Config) (*OSS, error) {
 		bucketURL:   conf.BucketURL,
 		bucket:      bucket,
 		credentials: client.Config.GetCredentials(),
-		// um:       *(*urlMaker)(reflect.ValueOf(bucket.Client.Conn).Elem().FieldByName("url").UnsafePointer()), // unused after AccessURL switched to bucketURL
-		publicRead: conf.PublicRead,
+		um:          *(*urlMaker)(reflect.ValueOf(bucket.Client.Conn).Elem().FieldByName("url").UnsafePointer()),
+		publicRead:  conf.PublicRead,
 	}, nil
 }
 
@@ -92,8 +92,8 @@ type OSS struct {
 	bucketURL   string
 	bucket      *oss.Bucket
 	credentials oss.Credentials
-	// um          urlMaker // unused after AccessURL switched to bucketURL
-	publicRead bool
+	um          urlMaker
+	publicRead  bool
 }
 
 func (o *OSS) Engine() string {
@@ -367,12 +367,7 @@ func (o *OSS) AccessURL(ctx context.Context, name string, expire time.Duration, 
 		return "", errs.WrapMsg(err, "AccessURL error")
 	}
 	params := getURLParams(*o.bucket.Client.Conn, rawParams)
-	// return getURL(o.um, o.bucket.BucketName, name, params).String() // old: uses endpoint-based domain
-	rawURL := o.bucketURL + name
-	if params != "" {
-		rawURL += "?" + params
-	}
-	return rawURL, nil
+	return getURL(o.um, o.bucket.BucketName, name, params).String(), nil
 }
 
 func (o *OSS) FormData(ctx context.Context, name string, size int64, contentType string, duration time.Duration) (*s3.FormData, error) {
