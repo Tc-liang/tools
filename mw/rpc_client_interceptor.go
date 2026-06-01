@@ -16,9 +16,7 @@ package mw
 
 import (
 	"context"
-	dconstant "dubbo.apache.org/dubbo-go/v3/common/constant"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/openimsdk/protocol/constant"
@@ -98,30 +96,7 @@ func getRpcContext(ctx context.Context) (context.Context, error) {
 	}
 	operationID, ok := ctx.Value(constant.OperationID).(string)
 	if !ok {
-		if raw := ctx.Value(dconstant.AttachmentKey); raw != nil {
-			if attachments, ok := raw.(map[string]interface{}); ok {
-				if id, exists := attachments["operationid"]; exists && id != nil {
-					switch v := id.(type) {
-					case string:
-						operationID = v
-					case []string:
-						if len(v) > 0 {
-							operationID = v[0]
-						}
-					case []interface{}:
-						if len(v) > 0 {
-							operationID = fmt.Sprint(v[0])
-						}
-					default:
-						operationID = fmt.Sprint(v)
-					}
-				}
-			}
-		}
-
-		if operationID == "" {
-			return nil, errs.ErrArgs.WrapMsg("ctx missing operationID")
-		}
+		return nil, errs.ErrArgs.WrapMsg("ctx missing operationID")
 	}
 	md.Set(constant.OperationID, operationID)
 	opUserID, ok := ctx.Value(constant.OpUserID).(string)
