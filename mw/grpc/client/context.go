@@ -31,19 +31,10 @@ func GrpcClientContext() grpc.DialOption {
 			if raw := ctx.Value(dconstant.AttachmentKey); raw != nil {
 				if attachments, ok := raw.(map[string]interface{}); ok {
 					if id, exists := attachments["operationid"]; exists && id != nil {
-						switch v := id.(type) {
-						case string:
-							operationID = v
-						case []string:
-							if len(v) > 0 {
-								operationID = v[0]
-							}
-						case []interface{}:
-							if len(v) > 0 {
-								operationID = fmt.Sprint(v[0])
-							}
-						default:
-							operationID = fmt.Sprint(v)
+						if strID, ok := id.(string); ok {
+							operationID = strID
+						} else {
+							operationID = fmt.Sprint(id)
 						}
 					}
 				}
