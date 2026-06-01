@@ -212,10 +212,30 @@ func (o *OSS) PresignedPutObject(ctx context.Context, name string, expire time.D
 	if err != nil {
 		return nil, err
 	}
+	rawURL, err = o.replaceDomain(rawURL)
+	if err != nil {
+		return nil, err
+	}
 	return &s3.PresignedPutResult{
 		URL:    rawURL,
 		Header: header,
 	}, nil
+}
+
+// replaceDomain replaces the native OSS endpoint domain in a signed URL with the configured bucketURL.
+// OSS V1 signatures do not include the Host header, so the signature remains valid after domain replacement.
+func (o *OSS) replaceDomain(rawURL string) (string, error) {
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return "", errs.WrapMsg(err, "replaceDomain: parse url error")
+	}
+	base, err := url.Parse(o.bucketURL)
+	if err != nil {
+		return "", errs.WrapMsg(err, "replaceDomain: parse bucketURL error")
+	}
+	parsed.Scheme = base.Scheme
+	parsed.Host = base.Host
+	return parsed.String(), nil
 }
 
 func (o *OSS) StatObject(ctx context.Context, name string) (*s3.ObjectInfo, error) {
